@@ -1,19 +1,43 @@
 
-name: Build iOS - Check
+name: Build iOS IPA Test
 
 on:
   workflow_dispatch:
 
 jobs:
-  check-ios:
+  build:
     runs-on: macos-15
+    timeout-minutes: 40
+
     steps:
-      - name: Descargar proyecto
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Comprobar Xcode
-        run: xcodebuild -version
-
-      - name: Buscar proyectos iOS
+      - name: Install XcodeGen
         run: |
-          find . -name "*.xcodeproj" -o -name "*.xcworkspace"
+          command -v xcodegen || brew install xcodegen
+
+      - name: Build iOS
+        run: |
+          python3 dm/ios/tools/build_smoke.py \
+            --output-root "$RUNNER_TEMP/ios-smoke"
+
+      - name: Package unsigned IPA
+        run: |
+          APP=$(find "$RUNNER_TEMP/ios-smoke" \
+            -type d -name "DmIOS.app" -print -quit)
+
+          if [ -z "$APP" ]; then
+            echo "No se encontró DmIOS.app"
+            exit 1
+          fi
+
+          mkdir -p Payload
+          cp -R "$APP" Payload/
+          zip -qr PlumberRacer2-Test.ipa Payload
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: PlumberRacer2-Test
+          path: PlumberRacer2-Test.ipa
