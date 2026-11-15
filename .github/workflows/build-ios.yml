@@ -17,10 +17,12 @@ jobs:
         run: |
           command -v xcodegen || brew install xcodegen
 
+      
       - name: Build iOS
         run: |
           python3 dm/ios/tools/build_smoke.py \
-            --output-root "$RUNNER_TEMP/ios-smoke"
+            --output "$RUNNER_TEMP/ios-smoke"
+
 
       - name: Package unsigned IPA
         run: |
