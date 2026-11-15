@@ -1,0 +1,19 @@
+
+name: Build iOS - Check
+
+on:
+  workflow_dispatch:
+
+jobs:
+  check-ios:
+    runs-on: macos-15
+    steps:
+      - name: Descargar proyecto
+        uses: actions/checkout@v4
+
+      - name: Comprobar Xcode
+        run: xcodebuild -version
+
+      - name: Buscar proyectos iOS
+        run: |
+          find . -name "*.xcodeproj" -o -name "*.xcworkspace"
